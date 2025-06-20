@@ -33,8 +33,8 @@ int main() {
     // Testes automáticos
     char *testes[] = {
         // Expressões infixas
-        "( 3 + 4 ) * 5",
-        "7 * 2 + 4",
+        "(3+4)*5",
+        "7*2+4",
         "8 + ( 5 * ( 2 + 4 ) )",
         "( 6 / 2 + 3 ) * 4",
         "9 + ( 5 * ( 2 + 8 * 4 ) )",

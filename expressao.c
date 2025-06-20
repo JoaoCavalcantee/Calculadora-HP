@@ -15,6 +15,86 @@
 // FUNÇÕES AUXILIARES
 // ==============================================================
 
+// Função para pré-processar a expressão (ATUALIZADA)
+static char *preprocessar_expressao(char *expressao) {
+    char *saida = (char *)malloc(TAM_MAX * 2);
+    int j = 0;
+    int i = 0;
+    int len = strlen(expressao);
+
+    while (i < len) {
+        // Tratar números negativos
+        if (expressao[i] == '-' && (i == 0 || strchr("(+-*/%^ ", expressao[i-1])) 
+            && (isdigit(expressao[i+1]) || expressao[i+1]=='.')) 
+        {
+            if (j > 0 && saida[j-1] != ' ') {
+                saida[j++] = ' ';
+            }
+            saida[j++] = expressao[i++];
+            while (i < len && (isdigit(expressao[i]) || expressao[i]=='.')) {
+                saida[j++] = expressao[i++];
+            }
+            if (j < TAM_MAX*2 - 1) saida[j++] = ' ';
+            continue;
+        }
+
+        // Operadores e parênteses
+        if (strchr("+-*/%^()", expressao[i])) {
+            if (j > 0 && saida[j-1] != ' ') {
+                saida[j++] = ' ';
+            }
+            saida[j++] = expressao[i++];
+            if (i < len && expressao[i] != ' ') {
+                saida[j++] = ' ';
+            }
+            continue;
+        }
+
+        // Funções (log, sen, cos, tg) - TRATAMENTO MELHORADO
+        if (isalpha((unsigned char)expressao[i])) {
+            if (j > 0 && saida[j-1] != ' ') {
+                saida[j++] = ' ';
+            }
+            
+            // Copia o nome da função
+            int start = i;
+            while (i < len && isalpha((unsigned char)expressao[i])) {
+                saida[j++] = expressao[i++];
+            }
+            
+            // Verifica se o próximo caractere é dígito, '-' ou '('
+            if (i < len && (isdigit(expressao[i]) || expressao[i] == '-' || expressao[i] == '(')) {
+                saida[j++] = ' ';
+            }
+            continue;
+        }
+
+        // Números positivos e pontos decimais
+        if (isdigit(expressao[i]) || expressao[i]=='.') {
+            if (j > 0 && saida[j-1] != ' ') {
+                saida[j++] = ' ';
+            }
+            while (i < len && (isdigit(expressao[i]) || expressao[i]=='.')) {
+                saida[j++] = expressao[i++];
+            }
+            if (j < TAM_MAX*2 - 1) saida[j++] = ' ';
+            continue;
+        }
+
+        // Ignorar espaços extras
+        if (isspace(expressao[i])) {
+            i++;
+            continue;
+        }
+
+        // Outros caracteres
+        saida[j++] = expressao[i++];
+    }
+
+    saida[j] = '\0';
+    return saida;
+}
+
 static bool ehOperador(char *token) {
     return (strcmp(token, "+") == 0 || strcmp(token, "-") == 0 ||
            strcmp(token, "*") == 0 || strcmp(token, "/") == 0 ||
@@ -127,13 +207,17 @@ static int Verificar_tipo(char *expressao) {
 // ==============================================================
 
 char *getFormaPosFixa(char *Str) {
-
-    if(Verificar_tipo(Str) == 1) {
-        return strdup(Str);
+    char *expressao = preprocessar_expressao(Str);
+    
+    if(Verificar_tipo(expressao) == 1) {
+        char *ret = strdup(expressao);
+        free(expressao);
+        return ret;
     }
 
     char copia[TAM_MAX];
-    strcpy(copia, Str);
+    strcpy(copia, expressao);
+    free(expressao);
     
     char *saida[TAM_PILHA];
     int contadorSaida = 0;
@@ -193,13 +277,17 @@ char *getFormaPosFixa(char *Str) {
 }
 
 char *getFormaInFixa(char *Str) {
-
-    if(Verificar_tipo(Str) == 0) {
-        return strdup(Str);
+    char *expressao = preprocessar_expressao(Str);
+    
+    if(Verificar_tipo(expressao) == 0) {
+        char *ret = strdup(expressao);
+        free(expressao);
+        return ret;
     }
 
     char copia[TAM_MAX];
-    strcpy(copia, Str);
+    strcpy(copia, expressao);
+    free(expressao);
 
     char pilha[TAM_PILHA][TAM_MAX];
     int topo = -1;
