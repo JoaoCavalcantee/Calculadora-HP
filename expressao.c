@@ -15,7 +15,6 @@
 // FUNÇÕES AUXILIARES
 // ==============================================================
 
-// Função para pré-processar a expressão (ATUALIZADA)
 static char *preprocessar_expressao(char *expressao) {
     char *saida = (char *)malloc(TAM_MAX * 2);
     int j = 0;
@@ -23,7 +22,7 @@ static char *preprocessar_expressao(char *expressao) {
     int len = strlen(expressao);
 
     while (i < len) {
-        // Tratar números negativos
+
         if (expressao[i] == '-' && (i == 0 || strchr("(+-*/%^ ", expressao[i-1])) 
             && (isdigit(expressao[i+1]) || expressao[i+1]=='.')) 
         {
@@ -38,7 +37,6 @@ static char *preprocessar_expressao(char *expressao) {
             continue;
         }
 
-        // Operadores e parênteses
         if (strchr("+-*/%^()", expressao[i])) {
             if (j > 0 && saida[j-1] != ' ') {
                 saida[j++] = ' ';
@@ -50,26 +48,22 @@ static char *preprocessar_expressao(char *expressao) {
             continue;
         }
 
-        // Funções (log, sen, cos, tg) - TRATAMENTO MELHORADO
         if (isalpha((unsigned char)expressao[i])) {
             if (j > 0 && saida[j-1] != ' ') {
                 saida[j++] = ' ';
             }
             
-            // Copia o nome da função
             int start = i;
             while (i < len && isalpha((unsigned char)expressao[i])) {
                 saida[j++] = expressao[i++];
             }
             
-            // Verifica se o próximo caractere é dígito, '-' ou '('
             if (i < len && (isdigit(expressao[i]) || expressao[i] == '-' || expressao[i] == '(')) {
                 saida[j++] = ' ';
             }
             continue;
         }
 
-        // Números positivos e pontos decimais
         if (isdigit(expressao[i]) || expressao[i]=='.') {
             if (j > 0 && saida[j-1] != ' ') {
                 saida[j++] = ' ';
@@ -81,13 +75,10 @@ static char *preprocessar_expressao(char *expressao) {
             continue;
         }
 
-        // Ignorar espaços extras
         if (isspace(expressao[i])) {
             i++;
             continue;
         }
-
-        // Outros caracteres
         saida[j++] = expressao[i++];
     }
 
